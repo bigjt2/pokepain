@@ -1,0 +1,15 @@
+{
+  "name": "pokepain",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "John White",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
