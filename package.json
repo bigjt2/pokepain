@@ -10,6 +10,8 @@
   "author": "John White",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.2"
+    "axios": "^1.4.0",
+    "express": "^4.18.2",
+    "winston": "^3.10.0"
   }
 }
