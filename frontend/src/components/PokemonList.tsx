@@ -1,7 +1,12 @@
 import { BaseSyntheticEvent, Fragment, useEffect, useState } from "react";
 import axios, { AxiosError } from "axios";
+import { capitalize } from "../utils";
 
-function PokemonList() {
+interface PokemonListProps {
+  onPokemonSelected: (url: string) => void;
+}
+
+function PokemonList({ onPokemonSelected }: PokemonListProps) {
   const pokeApiBasuUrl = "https://pokeapi.co/api/v2/pokemon/";
   const [pokemons, setPokemons] = useState([]);
   const [total, setTotal] = useState(0);
@@ -9,11 +14,13 @@ function PokemonList() {
   const [offset, setOffset] = useState(0);
   const [updateLimit, setUpdateLimit] = useState(limit);
   const [error, setError] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const onNext = () => {
     let newOffset = Math.min(offset + limit, total - limit);
     newOffset = Math.max(newOffset, 0);
     setOffset(newOffset);
+    setSelectedIndex(-1);
   };
 
   useEffect(() => {
@@ -49,14 +56,31 @@ function PokemonList() {
   return (
     <Fragment>
       {getNoPokemonMessage()}
-      <ul className="pokemons">
+      <ul className="list-group">
         {pokemons.map((pokemon: { name: string; url: string }, index) => (
-          <li key={pokemon.name}>{pokemon.name}</li>
+          <li
+            key={pokemon.name}
+            onClick={() => {
+              onPokemonSelected(pokemon.url);
+              setSelectedIndex(index);
+            }}
+            className={
+              selectedIndex === index
+                ? "list-group-item active"
+                : "list-group-item"
+            }
+          >
+            {capitalize(pokemon.name)}
+          </li>
         ))}
       </ul>
       <button
+        className="btn btn-secondary"
         disabled={offset === 0}
-        onClick={() => setOffset(Math.max(offset - limit, 0))}
+        onClick={() => {
+          setOffset(Math.max(offset - limit, 0));
+          setSelectedIndex(-1);
+        }}
       >
         Previous Pokemons
       </button>
@@ -69,6 +93,7 @@ function PokemonList() {
         }}
       />
       <button
+        className="btn btn-primary"
         onClick={() => {
           setUpdateLimit(limit);
         }}
@@ -76,6 +101,7 @@ function PokemonList() {
         Load
       </button>
       <button
+        className="btn btn-secondary"
         //TODO figure out a better disable option of this button
         onClick={onNext}
       >
