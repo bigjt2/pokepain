@@ -56,24 +56,26 @@ function PokemonList({ onPokemonSelected }: PokemonListProps) {
   return (
     <Fragment>
       {getNoPokemonMessage()}
-      <ul className="list-group">
-        {pokemons.map((pokemon: { name: string; url: string }, index) => (
-          <li
-            key={pokemon.name}
-            onClick={() => {
-              onPokemonSelected(pokemon.url);
-              setSelectedIndex(index);
-            }}
-            className={
-              selectedIndex === index
-                ? "list-group-item active"
-                : "list-group-item"
-            }
-          >
-            {capitalize(pokemon.name)}
-          </li>
-        ))}
-      </ul>
+      <div style={{ height: "80vh" }}>
+        <ul className="list-group list-group-scroll">
+          {pokemons.map((pokemon: { name: string; url: string }, index) => (
+            <li
+              key={pokemon.name}
+              onClick={() => {
+                onPokemonSelected(pokemon.url);
+                setSelectedIndex(index);
+              }}
+              className={
+                selectedIndex === index
+                  ? "list-group-item active"
+                  : "list-group-item"
+              }
+            >
+              {capitalize(pokemon.name)}
+            </li>
+          ))}
+        </ul>
+      </div>
       <button
         className="btn btn-secondary"
         disabled={offset === 0}

@@ -1,8 +1,19 @@
-.col {
+.col-bordered {
     border: 1px solid;
     border-radius: 10px;
 }
 
 .container {
     border: none;
+}
+
+.list-group-scroll {
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    height: 100%;
+    width: 100%;
+}
+
+.list-group-header {
+    background-color: #8644db;
 }
