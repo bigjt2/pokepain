@@ -99,7 +99,7 @@ function PokemonDisplay({ currentUrl }: PokemonDisplayProps) {
                   <td>{pokemon.stats[2].base_stat}</td>
                 </tr>
                 <tr>
-                  <td>Sepcial Attack:</td>
+                  <td>Special Attack:</td>
                   <td>{pokemon.stats[3].base_stat}</td>
                 </tr>
                 <tr>

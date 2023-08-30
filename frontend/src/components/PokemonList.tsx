@@ -8,6 +8,7 @@ interface PokemonListProps {
 
 function PokemonList({ onPokemonSelected }: PokemonListProps) {
   const pokeApiBasuUrl = "https://pokeapi.co/api/v2/pokemon/";
+  //const pokeApiBasuUrl = "http://localhost:3000/api/pokedex/";
   const [pokemons, setPokemons] = useState([]);
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(20);
