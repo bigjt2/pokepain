@@ -1,12 +1,15 @@
 import { Fragment, useState, useEffect } from "react";
 import axios from "axios";
 import { capitalize, sortByNameAZ } from "../utils";
+import { CollectionType, getPokedexApiBaseUrl } from "../Collections";
 
 interface PokemonDisplayProps {
+  collectionType: CollectionType;
   currentUrl: string;
 }
 
 interface IPokemon {
+  id: number;
   name: string;
   sprites: {
     front_default: string;
@@ -22,10 +25,32 @@ interface IPokemonTableItem {
   url: string;
 }
 
-function PokemonDisplay({ currentUrl }: PokemonDisplayProps) {
+function PokemonDisplay({ collectionType, currentUrl }: PokemonDisplayProps) {
   const [pokemon, setPokemon] = useState<IPokemon | undefined>(undefined);
   const [moves, setMoves] = useState<IPokemonTableItem[]>();
   const [abilities, setAbilities] = useState<IPokemonTableItem[]>();
+
+  const onCatch = async () => {
+    try {
+      const result = await axios.post(getPokedexApiBaseUrl(), pokemon);
+      console.log(result);
+    } catch (e: any) {
+      //TODO: move to file logging.
+      console.log(`${e.message}`);
+    }
+  };
+
+  const onRelease = async () => {
+    try {
+      const result = await axios.delete(
+        `${getPokedexApiBaseUrl()}/${pokemon?.id}`
+      );
+      console.log(result);
+    } catch (e: any) {
+      //TODO: move to file logging.
+      console.log(`${e.message}`);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -139,6 +164,16 @@ function PokemonDisplay({ currentUrl }: PokemonDisplayProps) {
             </div>
           </div>
         </div>
+        {collectionType === CollectionType.Wild && (
+          <button className="btn btn-secondary" onClick={onCatch}>
+            Catch!
+          </button>
+        )}
+        {collectionType === CollectionType.Boxes && (
+          <button className="btn btn-secondary" onClick={onRelease}>
+            Release
+          </button>
+        )}
       </Fragment>
     )
   );

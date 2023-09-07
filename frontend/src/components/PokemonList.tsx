@@ -3,12 +3,11 @@ import axios, { AxiosError } from "axios";
 import { capitalize } from "../utils";
 
 interface PokemonListProps {
-  onPokemonSelected: (url: string) => void;
+  apiBaseUrl: string;
+  onPokemonSelected: (url: string | null) => void;
 }
 
-function PokemonList({ onPokemonSelected }: PokemonListProps) {
-  const pokeApiBasuUrl = "https://pokeapi.co/api/v2/pokemon/";
-  //const pokeApiBasuUrl = "http://localhost:3000/api/pokedex/";
+function PokemonList({ apiBaseUrl, onPokemonSelected }: PokemonListProps) {
   const [pokemons, setPokemons] = useState([]);
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(20);
@@ -17,33 +16,46 @@ function PokemonList({ onPokemonSelected }: PokemonListProps) {
   const [error, setError] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
+  useEffect(() => {
+    reset();
+  }, [apiBaseUrl]);
+
+  useEffect(() => {
+    fetchPokemon();
+  }, [updateLimit, offset, total]);
+
+  const reset = () => {
+    setTotal(0);
+    setOffset(0);
+    setLimit(20);
+    onPokemonSelected(null);
+    setSelectedIndex(-1);
+  };
+
+  const fetchPokemon = async () => {
+    try {
+      const { data } = await axios.get(apiBaseUrl, {
+        params: { offset: offset, limit: limit },
+      });
+      if (total === 0) setTotal(data.count);
+      setPokemons(data.results);
+    } catch (e: any) {
+      if (e instanceof AxiosError) {
+        console.log(
+          //TODO: move to file logging.
+          `Failed to retrieve records from ${apiBaseUrl}, error returned: ${e.message}`
+        );
+      }
+      setError(e);
+    }
+  };
+
   const onNext = () => {
     let newOffset = Math.min(offset + limit, total - limit);
     newOffset = Math.max(newOffset, 0);
     setOffset(newOffset);
     setSelectedIndex(-1);
   };
-
-  useEffect(() => {
-    const fetchPokemon = async () => {
-      try {
-        const { data } = await axios.get(pokeApiBasuUrl, {
-          params: { offset: offset, limit: limit },
-        });
-        if (total === 0) setTotal(data.count);
-        setPokemons(data.results);
-      } catch (e: any) {
-        if (e instanceof AxiosError) {
-          console.log(
-            //TODO: move to file logging.
-            `Failed to retrieve records from ${pokeApiBasuUrl}, error returned: ${e.message}`
-          );
-        }
-        setError(e);
-      }
-    };
-    fetchPokemon();
-  }, [updateLimit, offset]);
 
   const getNoPokemonMessage = () => {
     return (
