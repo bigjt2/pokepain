@@ -4,47 +4,86 @@ import {
   CollectionType,
   getCollectionUrlFromType,
   getPokeApiBaseUrl,
+  getPokedexApiBaseUrl,
 } from "./Collections";
 import { BaseSyntheticEvent, useState } from "react";
-import { BatchFetchResult } from "./services/api";
+import { IApiError, IBatchFetchResult, IPokemonResult } from "./services/api";
 import api from "./services/api";
 
 import "./App.css";
 
 function App() {
   const [baseListUrl, setBaseListUrl] = useState<string>(getPokeApiBaseUrl);
-  const [selectedPokemonUrl, setSelectedPokemonUrl] = useState<string | null>(
-    null
-  );
   const [collectionType, setCollectionType] = useState<CollectionType>(
     CollectionType.Wild
   );
-
   const [pokemons, setPokemons] = useState<[]>([]);
+  const [selectedPokemon, setSelectedPokemon] = useState<
+    IPokemonResult | undefined
+  >(undefined);
   const [total, setTotal] = useState(0);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<IApiError | undefined>(undefined);
 
-  const onPokeClicked = (url: string | null) => {
-    setSelectedPokemonUrl(url);
+  const onPokeClicked = async (url: string | null) => {
+    if (!url) return;
+    let pokemonResult = await api.fetchSinglePokemonDetail(url);
+    if (api.isPokemonResult(pokemonResult)) setSelectedPokemon(pokemonResult);
+    if (api.isError(pokemonResult)) setError(pokemonResult);
   };
 
   const onCollectionClicked = async (e: BaseSyntheticEvent) => {
     let collectionUrl = getCollectionUrlFromType(e.target.value);
     setCollectionType(e.target.value);
     setBaseListUrl(collectionUrl);
-    let result = await api.fetchPokemons(collectionUrl);
-    refreshListFromResult(result);
+    refreshList(collectionUrl);
   };
 
-  const updateList = async (offset: number, limit: number) => {
+  const onListInternalUpdate = async (offset: number, limit: number) => {
     let result = await api.fetchPokemons(baseListUrl, offset, limit);
     refreshListFromResult(result);
   };
 
-  const refreshListFromResult = (result: BatchFetchResult) => {
-    setError(result.error);
-    setPokemons(result.results);
-    setTotal(result.total);
+  const refreshList = async (url: string) => {
+    let result = await api.fetchPokemons(url);
+    refreshListFromResult(result);
+    setSelectedPokemon(undefined);
+  };
+
+  const refreshListFromResult = (result: IBatchFetchResult | IApiError) => {
+    if (api.isBatchFetchResult(result)) {
+      setPokemons(result.results);
+      setTotal(result.total);
+    }
+    if (api.isError(result)) {
+      setError(result.error);
+      clearList();
+    }
+  };
+
+  const onCatch = async () => {
+    if (selectedPokemon) {
+      await api.postPokemonToPokedex(getPokedexApiBaseUrl(), selectedPokemon);
+    } else {
+      console.error("Pokemon was not set from list before attempting to POST.");
+    }
+  };
+
+  const onRelease = async () => {
+    if (selectedPokemon) {
+      await api.deletePokemonFromPokedex(
+        getPokedexApiBaseUrl(),
+        selectedPokemon.id
+      );
+      refreshList(baseListUrl);
+    } else {
+      console.error("Pokemon was not set from list before attempting to POST.");
+    }
+  };
+
+  const clearList = () => {
+    setPokemons([]);
+    setTotal(0);
+    setSelectedPokemon(undefined);
   };
 
   return (
@@ -83,16 +122,18 @@ function App() {
             pokemons={pokemons}
             totalPokemons={total}
             onPokemonSelected={onPokeClicked}
-            updateList={updateList}
+            onListInternalUpdate={onListInternalUpdate}
             collectionType={collectionType}
             error={error}
           />
         </div>
         <div className="col">
-          {selectedPokemonUrl && (
+          {selectedPokemon && (
             <PokemonDisplay
+              pokemon={selectedPokemon}
               collectionType={collectionType}
-              currentUrl={selectedPokemonUrl}
+              onCatch={onCatch}
+              onRelease={onRelease}
             />
           )}
         </div>

@@ -6,7 +6,7 @@ interface PokemonListProps {
   pokemons: [];
   totalPokemons: number;
   onPokemonSelected: (url: string | null) => void;
-  updateList: (offset: number, limit: number) => void;
+  onListInternalUpdate: (offset: number, limit: number) => void;
   collectionType: CollectionType;
   error: any | void;
 }
@@ -15,7 +15,7 @@ function PokemonList({
   pokemons,
   totalPokemons,
   onPokemonSelected,
-  updateList,
+  onListInternalUpdate: updateList,
   collectionType,
   error,
 }: PokemonListProps) {
@@ -26,7 +26,7 @@ function PokemonList({
 
   useEffect(() => {
     reset();
-  }, [collectionType]);
+  }, [collectionType, pokemons]);
   useEffect(() => {
     updateList(offset, updateLimit);
   }, [updateLimit, offset]);
