@@ -1,5 +1,6 @@
 import PokemonDisplay from "./components/PokemonDisplay";
 import PokemonList from "./components/PokemonList";
+import CollectionMenu from "./components/CollectionMenu";
 import {
   CollectionType,
   getCollectionUrlFromType,
@@ -90,31 +91,10 @@ function App() {
     <div className="container">
       <div style={{ backgroundColor: "#301934", color: "white" }}>
         <h2>Pokemons</h2>
-        <input
-          type="radio"
-          name="collection"
-          className="form-check-input"
-          value={CollectionType.Wild}
-          id="wild"
-          checked={collectionType === CollectionType.Wild}
-          onChange={onCollectionClicked}
+        <CollectionMenu
+          collectionType={collectionType}
+          onCollectionClicked={onCollectionClicked}
         />
-        <label className="form-check-label" htmlFor="wild">
-          Wild
-        </label>
-        <input
-          type="radio"
-          name="collection"
-          className="form-check-input"
-          style={{ marginLeft: "5px" }}
-          value={CollectionType.Boxes}
-          id="boxes"
-          checked={collectionType === CollectionType.Boxes}
-          onChange={onCollectionClicked}
-        />
-        <label className="form-check-label" htmlFor="boxes">
-          Boxes
-        </label>
       </div>
       <div className="row">
         <div className="col">
