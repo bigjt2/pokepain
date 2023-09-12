@@ -6,6 +6,8 @@ import {
   getPokeApiBaseUrl,
 } from "./Collections";
 import { BaseSyntheticEvent, useState } from "react";
+import { BatchFetchResult } from "./services/api";
+import api from "./services/api";
 
 import "./App.css";
 
@@ -18,14 +20,31 @@ function App() {
     CollectionType.Wild
   );
 
+  const [pokemons, setPokemons] = useState<[]>([]);
+  const [total, setTotal] = useState(0);
+  const [error, setError] = useState(null);
+
   const onPokeClicked = (url: string | null) => {
     setSelectedPokemonUrl(url);
   };
 
-  const onCollectionClicked = (e: BaseSyntheticEvent) => {
+  const onCollectionClicked = async (e: BaseSyntheticEvent) => {
     let collectionUrl = getCollectionUrlFromType(e.target.value);
     setCollectionType(e.target.value);
     setBaseListUrl(collectionUrl);
+    let result = await api.fetchPokemons(collectionUrl);
+    refreshListFromResult(result);
+  };
+
+  const updateList = async (offset: number, limit: number) => {
+    let result = await api.fetchPokemons(baseListUrl, offset, limit);
+    refreshListFromResult(result);
+  };
+
+  const refreshListFromResult = (result: BatchFetchResult) => {
+    setError(result.error);
+    setPokemons(result.results);
+    setTotal(result.total);
   };
 
   return (
@@ -61,8 +80,12 @@ function App() {
       <div className="row">
         <div className="col">
           <PokemonList
-            apiBaseUrl={baseListUrl}
+            pokemons={pokemons}
+            totalPokemons={total}
             onPokemonSelected={onPokeClicked}
+            updateList={updateList}
+            collectionType={collectionType}
+            error={error}
           />
         </div>
         <div className="col">

@@ -1,69 +1,63 @@
 import { BaseSyntheticEvent, Fragment, useEffect, useState } from "react";
-import axios, { AxiosError } from "axios";
 import { capitalize } from "../utils";
+import { CollectionType } from "../Collections";
 
 interface PokemonListProps {
-  apiBaseUrl: string;
+  pokemons: [];
+  totalPokemons: number;
   onPokemonSelected: (url: string | null) => void;
+  updateList: (offset: number, limit: number) => void;
+  collectionType: CollectionType;
+  error: any | void;
 }
 
-function PokemonList({ apiBaseUrl, onPokemonSelected }: PokemonListProps) {
-  const [pokemons, setPokemons] = useState([]);
-  const [total, setTotal] = useState(0);
+function PokemonList({
+  pokemons,
+  totalPokemons,
+  onPokemonSelected,
+  updateList,
+  collectionType,
+  error,
+}: PokemonListProps) {
   const [limit, setLimit] = useState(20);
   const [offset, setOffset] = useState(0);
   const [updateLimit, setUpdateLimit] = useState(limit);
-  const [error, setError] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   useEffect(() => {
     reset();
-  }, [apiBaseUrl]);
-
+  }, [collectionType]);
   useEffect(() => {
-    fetchPokemon();
-  }, [updateLimit, offset, total]);
+    updateList(offset, updateLimit);
+  }, [updateLimit, offset]);
 
   const reset = () => {
-    setTotal(0);
-    setOffset(0);
-    setLimit(20);
     onPokemonSelected(null);
     setSelectedIndex(-1);
   };
 
-  const fetchPokemon = async () => {
-    try {
-      const { data } = await axios.get(apiBaseUrl, {
-        params: { offset: offset, limit: limit },
-      });
-      if (total === 0) setTotal(data.count);
-      setPokemons(data.results);
-    } catch (e: any) {
-      if (e instanceof AxiosError) {
-        console.log(
-          //TODO: move to file logging.
-          `Failed to retrieve records from ${apiBaseUrl}, error returned: ${e.message}`
-        );
-      }
-      setError(e);
-    }
-  };
-
   const onNext = () => {
-    let newOffset = Math.min(offset + limit, total - limit);
+    let newOffset = Math.min(offset + limit, totalPokemons - limit);
     newOffset = Math.max(newOffset, 0);
     setOffset(newOffset);
     setSelectedIndex(-1);
   };
 
   const getNoPokemonMessage = () => {
-    return (
-      error !== null && (
-        <p>Something is wrong with the pokemons backend service</p>
-      )
-    );
-    return pokemons.length === 0 && <p>No pokemons to catch.</p>;
+    if (error) {
+      return <p>Something is wrong with the pokemons backend service</p>;
+    }
+    if (pokemons.length === 0) {
+      switch (collectionType) {
+        case CollectionType.Wild: {
+          return <p>No pokemons to catch.</p>;
+        }
+        case CollectionType.Boxes: {
+          return <p>No pokemons caught.</p>;
+        }
+      }
+    }
+    return null;
   };
 
   return (
