@@ -86,13 +86,18 @@ const fetchSinglePokemonDetail = async (
   }
 };
 
-const postPokemonToPokedex = async (url: string, pokemon: IPokemonResult) => {
+const postPokemonToPokedex = async (
+  url: string,
+  pokemon: IPokemonResult
+): Promise<number | any> => {
   try {
     const result = await axios.post(url, pokemon);
-    console.log(result);
+    return result.status;
   } catch (e: any) {
+    if (e.response?.status) return e.response.status;
     //TODO: move to file logging.
     console.log(`${e.message}`);
+    return e;
   }
 };
 

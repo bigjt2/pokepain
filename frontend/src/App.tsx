@@ -1,15 +1,17 @@
 import PokemonDisplay from "./components/PokemonDisplay";
 import PokemonList from "./components/PokemonList";
 import CollectionMenu from "./components/CollectionMenu";
+import { Alert } from "./components/Alert";
 import {
   CollectionType,
   getCollectionUrlFromType,
   getPokeApiBaseUrl,
   getPokedexApiBaseUrl,
 } from "./Collections";
-import { BaseSyntheticEvent, useState } from "react";
+import { BaseSyntheticEvent, useState, useRef } from "react";
 import { IApiError, IBatchFetchResult, IPokemonResult } from "./services/api";
 import api from "./services/api";
+import { capitalize } from "./utils";
 
 import "./App.css";
 
@@ -24,6 +26,8 @@ function App() {
   >(undefined);
   const [total, setTotal] = useState(0);
   const [error, setError] = useState<IApiError | undefined>(undefined);
+
+  const alertRef = useRef<any>();
 
   const onPokeClicked = async (url: string | null) => {
     if (!url) return;
@@ -63,7 +67,34 @@ function App() {
 
   const onCatch = async () => {
     if (selectedPokemon) {
-      await api.postPokemonToPokedex(getPokedexApiBaseUrl(), selectedPokemon);
+      let result = await api.postPokemonToPokedex(
+        getPokedexApiBaseUrl(),
+        selectedPokemon
+      );
+      if (typeof result === "number") {
+        switch (result) {
+          case 201:
+            alertRef.current.showAlert(
+              `Gotcha ${capitalize(selectedPokemon.name)}!`,
+              "success"
+            );
+            break;
+          case 303:
+            alertRef.current.showAlert(
+              `${capitalize(
+                selectedPokemon.name
+              )} is already in your boxes. Find another Pokemon.`,
+              "warning"
+            );
+        }
+      } else {
+        alertRef.current.showAlert(
+          `Oh no! ${capitalize(
+            selectedPokemon.name
+          )} ran away! (check the logs foo)`,
+          "danger"
+        );
+      }
     } else {
       console.error("Pokemon was not set from list before attempting to POST.");
     }
@@ -74,6 +105,10 @@ function App() {
       await api.deletePokemonFromPokedex(
         getPokedexApiBaseUrl(),
         selectedPokemon.id
+      );
+      alertRef.current.showAlert(
+        `So long, ${capitalize(selectedPokemon.name)}.`,
+        "success"
       );
       refreshList(baseListUrl);
     } else {
@@ -96,6 +131,7 @@ function App() {
           onCollectionClicked={onCollectionClicked}
         />
       </div>
+      <Alert ref={alertRef} />
       <div className="row">
         <div className="col">
           <PokemonList

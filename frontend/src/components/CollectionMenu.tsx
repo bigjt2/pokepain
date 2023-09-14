@@ -2,7 +2,7 @@ import { BaseSyntheticEvent, Fragment } from "react";
 import { CollectionType } from "../Collections";
 
 interface CollectionMenuProps {
-  collectionType: CollectionType;
+  collectionType: CollectionType.Wild | CollectionType.Boxes;
   onCollectionClicked: (e: BaseSyntheticEvent) => void;
 }
 
