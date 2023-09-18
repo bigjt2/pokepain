@@ -1,9 +1,10 @@
 const mongoose = require("mongoose");
 const winston = require("winston");
 
-//TODO: environment variable
-const DB = "mongodb://127.0.0.1:27017/pokepain";
-
+const DB_HOST = process.env.POKEDEX_MONGO_HOST || "127.0.0.1";
+const DB_PORT = process.env.POKEDEX_MONGO_PORT || "27017";
+const DB_NAME = process.env.POKEDEX_MONGO_NAME || "pokepain";
+const DB = `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`;
 module.exports = function () {
   mongoose
     .connect(DB)

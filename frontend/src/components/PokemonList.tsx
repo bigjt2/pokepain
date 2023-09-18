@@ -91,7 +91,7 @@ function PokemonList({
           setSelectedIndex(-1);
         }}
       >
-        Previous Pokemons
+        Previous
       </button>
       Results Per Page:
       <input
@@ -114,7 +114,7 @@ function PokemonList({
         //TODO figure out a better disable option of this button
         onClick={onNext}
       >
-        Next Pokemons
+        Next
       </button>
     </Fragment>
   );

@@ -1,6 +1,9 @@
-const pokeApiBasuUrl = "https://pokeapi.co/api/v2/pokemon/";
-//TODO: environment variable
-const pokedexApiBasuUrl = "http://localhost:3000/api/pokedex/";
+const pokeApiBasuUrl =
+  import.meta.env.VITE_POKE_API_URL || "https://pokeapi.co/api/v2/pokemon/";
+const pokedexHost = import.meta.env.VITE_POKEDEX_API_HOST || "http://localhost";
+const pokedexPort = import.meta.env.VITE_POKEDEX_API_PORT || "7001";
+
+const pokedexApiBasuUrl = `${pokedexHost}:${pokedexPort}/api/pokedex/`;
 
 export enum CollectionType {
   Wild = "WILD",
@@ -24,9 +27,11 @@ export function getCollectionUrlFromType(
 }
 
 export function getPokeApiBaseUrl(): string {
+  console.log(pokeApiBasuUrl);
   return pokeApiBasuUrl;
 }
 
 export function getPokedexApiBaseUrl(): string {
+  console.log(pokedexApiBasuUrl);
   return pokedexApiBasuUrl;
 }
