@@ -27,11 +27,9 @@ export function getCollectionUrlFromType(
 }
 
 export function getPokeApiBaseUrl(): string {
-  console.log(pokeApiBasuUrl);
   return pokeApiBasuUrl;
 }
 
 export function getPokedexApiBaseUrl(): string {
-  console.log(pokedexApiBasuUrl);
   return pokedexApiBasuUrl;
 }

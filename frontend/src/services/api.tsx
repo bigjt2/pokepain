@@ -40,6 +40,13 @@ const isError = (result: IApiResult): result is IApiError => {
   return "error" in result;
 };
 
+const getAuthHeaders = () => {
+  return {
+    "Content-Type": "application/json",
+    "x-auth-apikey": import.meta.env.VITE_POKEDEX_API_KEY,
+  };
+};
+
 const fetchPokemons = async (
   url: string,
   offset?: number,
@@ -91,7 +98,9 @@ const postPokemonToPokedex = async (
   pokemon: IPokemonResult
 ): Promise<number | any> => {
   try {
-    const result = await axios.post(url, pokemon);
+    const result = await axios.post(url, pokemon, {
+      headers: getAuthHeaders(),
+    });
     return result.status;
   } catch (e: any) {
     if (e.response?.status) return e.response.status;
@@ -101,13 +110,20 @@ const postPokemonToPokedex = async (
   }
 };
 
-const deletePokemonFromPokedex = async (url: string, pokemonId: number) => {
+const deletePokemonFromPokedex = async (
+  url: string,
+  pokemonId: number
+): Promise<number | any> => {
   try {
-    const result = await axios.delete(`${url}/${pokemonId}`);
-    console.log(result);
+    const result = await axios.delete(`${url}/${pokemonId}`, {
+      headers: getAuthHeaders(),
+    });
+    return result.status;
   } catch (e: any) {
+    if (e.response?.status) return e.response.status;
     //TODO: move to file logging.
     console.log(`${e.message}`);
+    return e;
   }
 };
 

@@ -1,7 +1,6 @@
 import { Fragment, useState, useEffect } from "react";
-import axios from "axios";
 import { capitalize, sortByNameAZ } from "../utils";
-import { CollectionType, getPokedexApiBaseUrl } from "../Collections";
+import { CollectionType } from "../Collections";
 import { IPokemonResult } from "../services/api";
 
 interface PokemonDisplayProps {

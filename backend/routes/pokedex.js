@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const winston = require("winston");
 const Pokemon = require("../models/pokemon");
+const auth = require("../middleware/auth");
 
 const POKEDEX_ENDPOINT = "/api/pokedex";
 
@@ -28,7 +29,7 @@ router.get("/:id", async (req, res) => {
   res.send(pokemon.body);
 });
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
     const exists =
       (await Pokemon.count({
@@ -53,7 +54,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     const deleted = await Pokemon.findOneAndRemove({ id: req.params.id });
     if (!deleted)

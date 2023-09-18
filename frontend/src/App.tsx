@@ -65,6 +65,14 @@ function App() {
     }
   };
 
+  const ranAwayAlert = () => {
+    let pokemon = selectedPokemon !== undefined ? selectedPokemon.name : "it";
+    alertRef.current.showAlert(
+      `Oh no! ${capitalize(pokemon)} ran away! (check the logs foo)`,
+      "danger"
+    );
+  };
+
   const onCatch = async () => {
     if (selectedPokemon) {
       let result = await api.postPokemonToPokedex(
@@ -86,15 +94,11 @@ function App() {
               )} is already in your boxes. Find another Pokemon.`,
               "warning"
             );
+            break;
+          default:
+            ranAwayAlert();
         }
-      } else {
-        alertRef.current.showAlert(
-          `Oh no! ${capitalize(
-            selectedPokemon.name
-          )} ran away! (check the logs foo)`,
-          "danger"
-        );
-      }
+      } else ranAwayAlert();
     } else {
       console.error("Pokemon was not set from list before attempting to POST.");
     }
@@ -102,17 +106,27 @@ function App() {
 
   const onRelease = async () => {
     if (selectedPokemon) {
-      await api.deletePokemonFromPokedex(
+      let result = await api.deletePokemonFromPokedex(
         getPokedexApiBaseUrl(),
         selectedPokemon.id
       );
-      alertRef.current.showAlert(
-        `So long, ${capitalize(selectedPokemon.name)}.`,
-        "success"
-      );
-      refreshList(baseListUrl);
+      if (typeof result === "number") {
+        switch (result) {
+          case 204:
+            alertRef.current.showAlert(
+              `So long, ${capitalize(selectedPokemon.name)}.`,
+              "success"
+            );
+            refreshList(baseListUrl);
+            break;
+          default:
+            ranAwayAlert();
+        }
+      } else ranAwayAlert();
     } else {
-      console.error("Pokemon was not set from list before attempting to POST.");
+      console.error(
+        "Pokemon was not set from list before attempting to DELETE."
+      );
     }
   };
 
