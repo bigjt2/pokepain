@@ -138,16 +138,19 @@ function App() {
 
   return (
     <div className="container">
-      <div style={{ backgroundColor: "#301934", color: "white" }}>
-        <h2>Pokemons</h2>
+      <div
+        className="row"
+        style={{ backgroundColor: "#301934", color: "white" }}
+      >
+        <h2 style={{ marginLeft: "1vw" }}>Pokemons</h2>
         <CollectionMenu
           collectionType={collectionType}
           onCollectionClicked={onCollectionClicked}
         />
       </div>
       <Alert ref={alertRef} />
-      <div className="row">
-        <div className="col">
+      <div id="mainDisplayRow" className="row">
+        <div className="col" style={{ width: "50%" }}>
           <PokemonList
             pokemons={pokemons}
             totalPokemons={total}
@@ -157,7 +160,7 @@ function App() {
             error={error}
           />
         </div>
-        <div className="col">
+        <div className="col" style={{ width: "50%" }}>
           {selectedPokemon && (
             <PokemonDisplay
               pokemon={selectedPokemon}

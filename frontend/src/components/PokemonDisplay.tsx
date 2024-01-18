@@ -2,6 +2,8 @@ import { Fragment, useState, useEffect } from "react";
 import { capitalize, sortByNameAZ } from "../utils";
 import { CollectionType } from "../Collections";
 import { IPokemonResult } from "../services/api";
+import PokeMainStats from "../components/PokeMainStats";
+import Accordion from "./Accordion";
 
 interface PokemonDisplayProps {
   pokemon: IPokemonResult;
@@ -45,29 +47,27 @@ function PokemonDisplay({
   return (
     <Fragment>
       <div className="container">
-        <div className="row">
-          <div className="col text-center col-bordered">
+        {/* Desktop Display */}
+        <div className="row d-none d-md-flex">
+          <div id="pokemonImage" className="col text-center col-bordered">
             <img src={pokemon.sprites.front_default} alt="No Image Available" />
           </div>
-          <div className="col col-bordered">
-            <div className="row">Name: {capitalize(pokemon.name)}</div>
-            <div className="row">
-              Type(s):{" "}
-              {pokemon.types
-                .map(function (type) {
-                  return capitalize(type.type.name);
-                })
-                .join(" ")}
-            </div>
-            <div className="row">Height: {pokemon.height}</div>
-            <div className="row">Weight: {pokemon.weight}</div>
+          <PokeMainStats {...pokemon} />
+        </div>
+        {/* Phone Display */}
+        <div className="row d-md-none">
+          <div id="pokemonImage" className="col text-center col-bordered">
+            <img src={pokemon.sprites.front_default} alt="No Image Available" />
           </div>
         </div>
+        <div className="row d-md-none">
+          <PokeMainStats {...pokemon} />
+        </div>
 
-        <div className="row">
+        <div id="baseStats" className="row">
           <table className="table">
             <thead>
-              <tr className="table table-dark">
+              <tr>
                 <th colSpan={2}>Base Stats</th>
               </tr>
             </thead>
@@ -100,21 +100,21 @@ function PokemonDisplay({
           </table>
         </div>
 
-        <div className="row ">
-          <h3 className="list-group-header">Moves</h3>
-          <div style={{ height: "20vh" }}>
-            <ul className="list-group list-group-scroll">
-              {moves?.map((moveItem, index) => (
-                <li key={index} className={"list-group-item"}>
-                  {capitalize(moveItem.name)}
-                </li>
-              ))}
-            </ul>
-          </div>
+        <div id="moveStats" className="row">
+          <Accordion title="Moves">
+            <div style={{ height: "20vh" }}>
+              <ul className="list-group list-group-scroll">
+                {moves?.map((moveItem, index) => (
+                  <li key={index} className={"list-group-item"}>
+                    {capitalize(moveItem.name)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Accordion>
         </div>
-        <div className="row ">
-          <h3 className="list-group-header">Abilities</h3>
-          <div style={{ height: "10vh" }}>
+        <div id="abilityStats" className="row ">
+          <Accordion title="Abilities">
             <ul className="list-group list-group-scroll">
               {abilities?.map((ability, index) => (
                 <li key={index} className={"list-group-item"}>
@@ -122,19 +122,21 @@ function PokemonDisplay({
                 </li>
               ))}
             </ul>
-          </div>
+          </Accordion>
+        </div>
+        <div id="actionBtns" className="row">
+          {collectionType === CollectionType.Wild && (
+            <button className="btn btn-secondary" onClick={onCatch}>
+              Catch!
+            </button>
+          )}
+          {collectionType === CollectionType.Boxes && (
+            <button className="btn btn-secondary" onClick={onRelease}>
+              Release
+            </button>
+          )}
         </div>
       </div>
-      {collectionType === CollectionType.Wild && (
-        <button className="btn btn-secondary" onClick={onCatch}>
-          Catch!
-        </button>
-      )}
-      {collectionType === CollectionType.Boxes && (
-        <button className="btn btn-secondary" onClick={onRelease}>
-          Release
-        </button>
-      )}
     </Fragment>
   );
 }

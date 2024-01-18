@@ -1,6 +1,7 @@
 import { BaseSyntheticEvent, Fragment, useEffect, useState } from "react";
 import { capitalize } from "../utils";
 import { CollectionType } from "../Collections";
+import { isMobile } from "react-device-detect";
 
 interface PokemonListProps {
   pokemons: [];
@@ -63,59 +64,82 @@ function PokemonList({
   return (
     <Fragment>
       {getNoPokemonMessage()}
-      <div style={{ height: "80vh" }}>
-        <ul className="list-group list-group-scroll">
-          {pokemons.map((pokemon: { name: string; url: string }, index) => (
-            <li
-              key={pokemon.name}
+      <div className="container">
+        <div className="row">
+          <div style={{ height: "80vh" }}>
+            <ul className="list-group list-group-scroll">
+              {pokemons.map((pokemon: { name: string; url: string }, index) => (
+                <li
+                  key={pokemon.name}
+                  onClick={() => {
+                    onPokemonSelected(pokemon.url);
+                    setSelectedIndex(index);
+                  }}
+                  className={
+                    selectedIndex === index
+                      ? "list-group-item active"
+                      : "list-group-item"
+                  }
+                >
+                  {capitalize(pokemon.name)}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="row">
+          <div className="col">
+            <button
+              className="btn btn-secondary"
+              disabled={offset === 0}
               onClick={() => {
-                onPokemonSelected(pokemon.url);
-                setSelectedIndex(index);
+                setOffset(Math.max(offset - limit, 0));
+                setSelectedIndex(-1);
               }}
-              className={
-                selectedIndex === index
-                  ? "list-group-item active"
-                  : "list-group-item"
-              }
             >
-              {capitalize(pokemon.name)}
-            </li>
-          ))}
-        </ul>
+              Previous
+            </button>
+          </div>
+          <div className="col">
+            <button
+              className="btn btn-secondary"
+              //TODO figure out a better disable option of this button
+              onClick={onNext}
+            >
+              Next
+            </button>
+          </div>
+          {!isMobile && (
+            <Fragment>
+              <div className="col">Results Per Page:</div>
+              <div className="col">
+                <input
+                  style={{
+                    maxWidth: "100%",
+                    width: "100%",
+                    boxSizing: "border-box",
+                  }}
+                  value={limit}
+                  type="number"
+                  onChange={(e: BaseSyntheticEvent) => {
+                    setLimit(Number(e.target.value));
+                  }}
+                />
+              </div>
+              <div className="col">
+                <button
+                  className="btn btn-primary"
+                  onClick={() => {
+                    setUpdateLimit(limit);
+                  }}
+                >
+                  Load
+                </button>
+              </div>
+            </Fragment>
+          )}
+        </div>
       </div>
-      <button
-        className="btn btn-secondary"
-        disabled={offset === 0}
-        onClick={() => {
-          setOffset(Math.max(offset - limit, 0));
-          setSelectedIndex(-1);
-        }}
-      >
-        Previous
-      </button>
-      Results Per Page:
-      <input
-        value={limit}
-        type="number"
-        onChange={(e: BaseSyntheticEvent) => {
-          setLimit(Number(e.target.value));
-        }}
-      />
-      <button
-        className="btn btn-primary"
-        onClick={() => {
-          setUpdateLimit(limit);
-        }}
-      >
-        Load
-      </button>
-      <button
-        className="btn btn-secondary"
-        //TODO figure out a better disable option of this button
-        onClick={onNext}
-      >
-        Next
-      </button>
     </Fragment>
   );
 }

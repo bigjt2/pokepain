@@ -5,6 +5,8 @@
 
 .container {
     border: none;
+    height: 100%;
+    width: 100%;
 }
 
 .list-group-scroll {
@@ -14,6 +16,47 @@
     width: 100%;
 }
 
-.list-group-header {
-    background-color: #8644db;
+table thead tr {
+    --bs-table-bg: #8644db !important;
+}
+
+table th {
+    color: white !important;
+}
+
+.Collapsible {
+    padding: 0 !important;
+}
+
+.Collapsible__trigger {
+    font-weight: bold;
+    color: white;
+    padding-left: 0.5rem;
+    background-color: #8644db !important;
+    display: block;
+    line-height: 2rem;
+}
+
+/*phone size media query */
+@media(max-width: 576px) {
+    .container {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    table th {
+        font-size: 14px;
+        padding: 2px !important;
+        margin-left: 2px !important;
+    }
+    table td {
+        font-size: 12px;
+    }
+    ul li {
+        font-size: 12px;
+    }
+    .Collapsible__trigger {
+        font-size: 12px;
+        padding-left: 0.25rem;
+        line-height: 1.5rem;
+    }
 }
