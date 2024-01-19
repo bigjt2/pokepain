@@ -7,7 +7,7 @@ const { validateIdParam, validatePokePost } = require("../middleware/validate");
 
 const POKEDEX_ENDPOINT = "/api/pokedex";
 
-router.get("/", async (req, res) => {
+router.get("/", auth, async (req, res) => {
   let limit = parseInt(req.query.limit);
   let offset = parseInt(req.query.offset);
   const pokemons = await Pokemon.find().sort("name").limit(limit).skip(offset);
@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
   });
 });
 
-router.get("/:id", validateIdParam, async (req, res) => {
+router.get("/:id", [auth, validateIdParam], async (req, res) => {
   const pokemon = await Pokemon.findOne({ id: req.params.id });
   res.send(pokemon.body);
 });

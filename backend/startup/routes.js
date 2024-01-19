@@ -1,6 +1,7 @@
 const express = require("express");
 const pokedex = require("../routes/pokedex");
 const healthcheck = require("../routes/healthCheck");
+const trainers = require("../routes/trainers");
 
 module.exports = function (app) {
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
@@ -18,4 +19,5 @@ module.exports = function (app) {
   });
   app.use(pokedex.POKEDEX_ENDPOINT, pokedex.Router);
   app.use(healthcheck.HEALTHCHECK_ENDPOINT, healthcheck.Router);
+  app.use(trainers.TRAINERS_ENDPOINT, trainers.Router);
 };
