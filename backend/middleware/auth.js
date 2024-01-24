@@ -9,10 +9,21 @@ module.exports = async function (req, res, next) {
     return res.status(400).send("Auth Key is required for this endpoint.");
   }
   try {
-    const verified = jwt.verify(userToken, appSecrets.pokedexApiKey);
-    if (!verified)
+    if (userToken == null)
       return res.status(401).send("Authentication failed on this endpoint.");
-    next();
+    jwt.verify(userToken, appSecrets.pokedexApiKey, (err, user) => {
+      if (err) {
+        return res
+          .status(403)
+          .send(
+            err.name === "TokenExpiredError"
+              ? "Token is expired."
+              : "Token is invalid."
+          );
+      }
+      req.user = user;
+      next();
+    });
   } catch (e) {
     var ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
     winston.error(

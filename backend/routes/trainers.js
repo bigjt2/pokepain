@@ -32,7 +32,9 @@ router.get("/login", async (req, res) => {
     time: Date(),
     userId: username,
   };
-  const userToken = jwt.sign(data, appSecrets.pokedexApiKey);
+  const userToken = jwt.sign(data, appSecrets.pokedexApiKey, {
+    expiresIn: "1m",
+  });
   res
     .status(200)
     .send({ authHeader: appSecrets.authHeaderKey, authToken: userToken });
