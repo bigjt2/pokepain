@@ -1,22 +1,24 @@
-import PokemonDisplay from "./components/PokemonDisplay";
-import PokemonList from "./components/PokemonList";
-import CollectionMenu from "./components/CollectionMenu";
-import { Alert } from "./components/Alert";
+import PokemonDisplay from "../components/PokemonDisplay";
+import PokemonList from "../components/PokemonList";
+import CollectionMenu from "../components/CollectionMenu";
+import Alert from "../components/Alert";
+import { CollectionType } from "../models/Collections";
+import { BaseSyntheticEvent, useState, useRef, useEffect } from "react";
 import {
-  CollectionType,
-  getCollectionUrlFromType,
-  getPokeApiBaseUrl,
-  getPokedexApiBaseUrl,
-} from "./Collections";
-import { BaseSyntheticEvent, useState, useRef } from "react";
-import { IApiError, IBatchFetchResult, IPokemonResult } from "./services/api";
-import api from "./services/api";
-import { capitalize } from "./utils";
+  IBatchFetchResult,
+  IApiError,
+  IPokemonResult,
+  isBatchFetchResult,
+  isPokemonResult,
+  isError,
+} from "../models/ApiResults";
+import pokeApiService from "../services/pokeApiService";
+import pokedexService from "../services/pokedexService";
+import { capitalize } from "../utils";
 
-import "./App.css";
+import "../App.css";
 
 function App() {
-  const [baseListUrl, setBaseListUrl] = useState<string>(getPokeApiBaseUrl);
   const [collectionType, setCollectionType] = useState<CollectionType>(
     CollectionType.Wild
   );
@@ -31,35 +33,36 @@ function App() {
 
   const onPokeClicked = async (url: string | null) => {
     if (!url) return;
-    let pokemonResult = await api.fetchSinglePokemonDetail(url);
-    if (api.isPokemonResult(pokemonResult)) setSelectedPokemon(pokemonResult);
-    if (api.isError(pokemonResult)) setError(pokemonResult);
+    let pokemonResult = null;
+    if (CollectionType.Wild === collectionType) {
+      pokemonResult = await pokeApiService.fetchSinglePokemonDetail(url);
+    } else if (CollectionType.Pokedex === collectionType) {
+      pokemonResult = await pokedexService.fetchPokedexEntry(url);
+    }
+    if (pokemonResult && isPokemonResult(pokemonResult))
+      setSelectedPokemon(pokemonResult);
+    if (pokemonResult && isError(pokemonResult)) setError(pokemonResult);
   };
 
-  const onCollectionClicked = async (e: BaseSyntheticEvent) => {
-    let collectionUrl = getCollectionUrlFromType(e.target.value);
-    setCollectionType(e.target.value);
-    setBaseListUrl(collectionUrl);
-    refreshList(collectionUrl);
-  };
-
-  const onListInternalUpdate = async (offset: number, limit: number) => {
-    let result = await api.fetchPokemons(baseListUrl, offset, limit);
-    refreshListFromResult(result);
-  };
-
-  const refreshList = async (url: string) => {
-    let result = await api.fetchPokemons(url);
-    refreshListFromResult(result);
-    setSelectedPokemon(undefined);
+  const refreshList = async (offset?: number, limit?: number) => {
+    let result = null;
+    if (CollectionType.Wild === collectionType) {
+      result = await pokeApiService.fetchPokemonsFromWild(offset, limit);
+    } else if (CollectionType.Pokedex === collectionType) {
+      result = await pokedexService.fetchPokemonsFromPokedex(offset, limit);
+    }
+    if (result) {
+      refreshListFromResult(result);
+      setSelectedPokemon(undefined);
+    }
   };
 
   const refreshListFromResult = (result: IBatchFetchResult | IApiError) => {
-    if (api.isBatchFetchResult(result)) {
+    if (isBatchFetchResult(result)) {
       setPokemons(result.results);
       setTotal(result.total);
     }
-    if (api.isError(result)) {
+    if (isError(result)) {
       setError(result.error);
       clearList();
     }
@@ -75,10 +78,7 @@ function App() {
 
   const onCatch = async () => {
     if (selectedPokemon) {
-      let result = await api.postPokemonToPokedex(
-        getPokedexApiBaseUrl(),
-        selectedPokemon
-      );
+      let result = await pokedexService.postPokemonToPokedex(selectedPokemon);
       if (typeof result === "number") {
         switch (result) {
           case 201:
@@ -91,7 +91,7 @@ function App() {
             alertRef.current.showAlert(
               `${capitalize(
                 selectedPokemon.name
-              )} is already in your boxes. Find another Pokemon.`,
+              )} is already in your pokedex. Find another Pokemon.`,
               "warning"
             );
             break;
@@ -106,8 +106,7 @@ function App() {
 
   const onRelease = async () => {
     if (selectedPokemon) {
-      let result = await api.deletePokemonFromPokedex(
-        getPokedexApiBaseUrl(),
+      let result = await pokedexService.deletePokemonFromPokedex(
         selectedPokemon.id
       );
       if (typeof result === "number") {
@@ -117,7 +116,7 @@ function App() {
               `So long, ${capitalize(selectedPokemon.name)}.`,
               "success"
             );
-            refreshList(baseListUrl);
+            refreshList();
             break;
           default:
             ranAwayAlert();
@@ -136,6 +135,10 @@ function App() {
     setSelectedPokemon(undefined);
   };
 
+  useEffect(() => {
+    refreshList();
+  }, [collectionType]);
+
   return (
     <div className="container">
       <div
@@ -145,7 +148,7 @@ function App() {
         <h2 style={{ marginLeft: "1vw" }}>Pokemons</h2>
         <CollectionMenu
           collectionType={collectionType}
-          onCollectionClicked={onCollectionClicked}
+          onCollectionClicked={(e) => setCollectionType(e.target.value)}
         />
       </div>
       <Alert ref={alertRef} />
@@ -155,7 +158,7 @@ function App() {
             pokemons={pokemons}
             totalPokemons={total}
             onPokemonSelected={onPokeClicked}
-            onListInternalUpdate={onListInternalUpdate}
+            onListInternalUpdate={refreshList}
             collectionType={collectionType}
             error={error}
           />

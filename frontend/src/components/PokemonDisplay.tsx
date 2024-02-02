@@ -1,7 +1,7 @@
 import { Fragment, useState, useEffect } from "react";
 import { capitalize, sortByNameAZ } from "../utils";
-import { CollectionType } from "../Collections";
-import { IPokemonResult } from "../services/api";
+import { CollectionType } from "../models/Collections";
+import { IPokemonResult } from "../models/ApiResults";
 import PokeMainStats from "../components/PokeMainStats";
 import Accordion from "./Accordion";
 
@@ -127,12 +127,12 @@ function PokemonDisplay({
         <div id="actionBtns" className="row">
           {collectionType === CollectionType.Wild && (
             <button className="btn btn-secondary" onClick={onCatch}>
-              Catch!
+              Register
             </button>
           )}
-          {collectionType === CollectionType.Boxes && (
+          {collectionType === CollectionType.Pokedex && (
             <button className="btn btn-secondary" onClick={onRelease}>
-              Release
+              Remove
             </button>
           )}
         </div>

@@ -1,140 +1,44 @@
-import { AxiosError } from "axios";
 import axios from "axios";
+import sessionService from "./sessionService";
 
-interface IApiResult {}
-
-export interface IBatchFetchResult extends IApiResult {
-  total: number;
-  results: [];
-}
-
-export interface IPokemonResult extends IApiResult {
-  id: number;
-  name: string;
-  sprites: {
-    front_default: string;
-  };
-  height: number;
-  weight: number;
-  types: any[];
-  stats: any[];
-  moves: any[];
-  abilities: any[];
-}
-
-export interface IApiError extends IApiResult {
-  error: any;
-}
-
-const isBatchFetchResult = (
-  result: IApiResult
-): result is IBatchFetchResult => {
-  return "results" in result;
-};
-
-const isPokemonResult = (result: IApiResult): result is IPokemonResult => {
-  return "name" in result;
-};
-
-const isError = (result: IApiResult): result is IApiError => {
-  return "error" in result;
-};
-
-const getAuthHeaders = () => {
-  return {
+const api = axios.create({
+  baseURL: "http://localhost:8080",
+  withCredentials: true, //for sending cookies to pokedex backend API.
+  headers: {
     "Content-Type": "application/json",
-    "x-auth-apikey": import.meta.env.VITE_POKEDEX_API_KEY,
-  };
-};
+  },
+});
 
-const fetchPokemons = async (
-  url: string,
-  offset?: number,
-  limit?: number
-): Promise<IBatchFetchResult | IApiError> => {
-  try {
-    const { data } = await axios.get(url, {
-      params: { offset: offset, limit: limit },
-    });
-    let result: IBatchFetchResult = {
-      total: data.count,
-      results: data.results,
-    };
-    return result;
-  } catch (e: any) {
-    if (e instanceof AxiosError) {
-      console.log(
-        //TODO: move to file logging.
-        `Failed to retrieve records from ${url}, error returned: ${e.message}`
-      );
+api.interceptors.response.use(
+  (res) => {
+    return res;
+  },
+  async (err) => {
+    const originalConfig = err.config;
+
+    if (originalConfig.url !== "/api/trainers/login" && err.response) {
+      // Access Token was expired
+      if (err.response.status === 401 && !originalConfig._retry) {
+        originalConfig._retry = true;
+
+        try {
+          const rs = await api.post("/api/trainers/refreshToken", {
+            refreshToken: sessionService.getSession()?.refreshToken,
+          });
+
+          return api(originalConfig);
+        } catch (_error: any) {
+          if (_error.response.status === 403) {
+            //refresh token expired, logout user
+            sessionService.removeSession();
+          }
+          return Promise.reject(_error);
+        }
+      }
     }
-    let result: IApiError = {
-      error: e,
-    };
-    return result;
-  }
-};
 
-const fetchSinglePokemonDetail = async (
-  url: string
-): Promise<IPokemonResult | IApiError> => {
-  try {
-    const { data } = await axios.get(url);
-    return data as IPokemonResult;
-  } catch (e: any) {
-    console.log(
-      //TODO: move to file logging.
-      `Failed to retrieve records from ${url}, error returned: ${e.message}`
-    );
-    let error: IApiError = {
-      error: e,
-    };
-    return error;
+    return Promise.reject(err);
   }
-};
-
-const postPokemonToPokedex = async (
-  url: string,
-  pokemon: IPokemonResult
-): Promise<number | any> => {
-  try {
-    const result = await axios.post(url, pokemon, {
-      headers: getAuthHeaders(),
-    });
-    return result.status;
-  } catch (e: any) {
-    if (e.response?.status) return e.response.status;
-    //TODO: move to file logging.
-    console.log(`${e.message}`);
-    return e;
-  }
-};
-
-const deletePokemonFromPokedex = async (
-  url: string,
-  pokemonId: number
-): Promise<number | any> => {
-  try {
-    const result = await axios.delete(`${url}/${pokemonId}`, {
-      headers: getAuthHeaders(),
-    });
-    return result.status;
-  } catch (e: any) {
-    if (e.response?.status) return e.response.status;
-    //TODO: move to file logging.
-    console.log(`${e.message}`);
-    return e;
-  }
-};
-
-const api = {
-  fetchPokemons: fetchPokemons,
-  fetchSinglePokemonDetail: fetchSinglePokemonDetail,
-  postPokemonToPokedex: postPokemonToPokedex,
-  deletePokemonFromPokedex: deletePokemonFromPokedex,
-  isBatchFetchResult: isBatchFetchResult,
-  isPokemonResult: isPokemonResult,
-  isError: isError,
-};
+);
 
 export default api;

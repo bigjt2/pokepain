@@ -1,6 +1,6 @@
 import { useState, useImperativeHandle, forwardRef } from "react";
 
-export const Alert = forwardRef((props, alertRef) => {
+const Alert = forwardRef((props, alertRef) => {
   const DEFAULT_STYLE = "primary";
   const VALID_STYLES = ["primary", "success", "danger", "warning", "info"];
   const [visible, setVisible] = useState<boolean>(false);
@@ -31,3 +31,5 @@ export const Alert = forwardRef((props, alertRef) => {
     )
   );
 });
+
+export default Alert;

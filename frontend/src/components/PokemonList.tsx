@@ -1,6 +1,6 @@
 import { BaseSyntheticEvent, Fragment, useEffect, useState } from "react";
 import { capitalize } from "../utils";
-import { CollectionType } from "../Collections";
+import { CollectionType } from "../models/Collections";
 import { isMobile } from "react-device-detect";
 
 interface PokemonListProps {
@@ -53,7 +53,7 @@ function PokemonList({
         case CollectionType.Wild: {
           return <p>No pokemons to catch.</p>;
         }
-        case CollectionType.Boxes: {
+        case CollectionType.Pokedex: {
           return <p>No pokemons caught.</p>;
         }
       }

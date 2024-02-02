@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 const winston = require("winston");
 const Pokemon = require("../models/pokemon");
-const auth = require("../middleware/auth");
+const verifyAccess = require("../middleware/verifyAccessToken");
 const { validateIdParam, validatePokePost } = require("../middleware/validate");
 
 const POKEDEX_ENDPOINT = "/api/pokedex";
 
-router.get("/", auth, async (req, res) => {
+router.get("/", verifyAccess, async (req, res) => {
   let limit = parseInt(req.query.limit);
   let offset = parseInt(req.query.offset);
   const pokemons = await Pokemon.find().sort("name").limit(limit).skip(offset);
@@ -25,12 +25,12 @@ router.get("/", auth, async (req, res) => {
   });
 });
 
-router.get("/:id", [auth, validateIdParam], async (req, res) => {
+router.get("/:id", [verifyAccess, validateIdParam], async (req, res) => {
   const pokemon = await Pokemon.findOne({ id: req.params.id });
   res.send(pokemon.body);
 });
 
-router.post("/", [auth, validatePokePost], async (req, res) => {
+router.post("/", [verifyAccess, validatePokePost], async (req, res) => {
   try {
     const exists =
       (await Pokemon.count({
@@ -55,7 +55,7 @@ router.post("/", [auth, validatePokePost], async (req, res) => {
   }
 });
 
-router.delete("/:id", [auth, validateIdParam], async (req, res) => {
+router.delete("/:id", [verifyAccess, validateIdParam], async (req, res) => {
   try {
     const deleted = await Pokemon.findOneAndRemove({ id: req.params.id });
     if (!deleted)

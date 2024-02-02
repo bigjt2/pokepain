@@ -1,8 +1,8 @@
 import { BaseSyntheticEvent, Fragment } from "react";
-import { CollectionType } from "../Collections";
+import { CollectionType } from "../models/Collections";
 
 interface CollectionMenuProps {
-  collectionType: CollectionType.Wild | CollectionType.Boxes;
+  collectionType: CollectionType.Wild | CollectionType.Pokedex;
   onCollectionClicked: (e: BaseSyntheticEvent) => void;
 }
 
@@ -30,13 +30,13 @@ function CollectionMenu({
           name="collection"
           className="form-check-input"
           style={{ marginLeft: "5px" }}
-          value={CollectionType.Boxes}
-          id="boxes"
-          checked={collectionType === CollectionType.Boxes}
+          value={CollectionType.Pokedex}
+          id="pokedex"
+          checked={collectionType === CollectionType.Pokedex}
           onChange={onCollectionClicked}
         />
-        <label className="form-check-label" htmlFor="boxes">
-          Boxes
+        <label className="form-check-label" htmlFor="pokedex">
+          Pokedex
         </label>
       </div>
     </Fragment>
