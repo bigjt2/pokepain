@@ -1,8 +1,11 @@
 import axios from "axios";
 import sessionService from "./sessionService";
 
+const ENV_HOST = import.meta.env.VITE_ENV_HOST || "http://localhost";
+const PROXY_PORT = import.meta.env.VITE_FRONTEND_PROXY_PORT || "7001";
+
 const api = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: `${ENV_HOST}:${PROXY_PORT}`,
   withCredentials: true, //for sending cookies to pokedex backend API.
   headers: {
     "Content-Type": "application/json",

@@ -1,5 +1,7 @@
 node_modules/
 package-lock.json
 logs/
-.env
+.env.aws
+.env.docker.local
+.env.wifi.local
 props/

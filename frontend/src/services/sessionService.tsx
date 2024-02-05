@@ -1,5 +1,4 @@
 const initSession = (trainer: any) => {
-  console.log(JSON.stringify(trainer));
   localStorage.setItem("session", JSON.stringify(trainer));
 };
 

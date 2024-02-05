@@ -8,12 +8,6 @@ import { AxiosError } from "axios";
 
 //TODO: move all console.log to some kind of file logging.
 
-//TODO: still needed?
-const pokeApiBasuUrl =
-  import.meta.env.VITE_POKE_API_URL || "https://pokeapi.co/api/v2/pokemon/";
-const pokedexHost = import.meta.env.VITE_POKEDEX_API_HOST || "http://localhost";
-const pokedexPort = import.meta.env.VITE_POKEDEX_API_PORT || "7001";
-
 const pokedexEndpoint = "/api/pokedex/";
 
 const fetchPokemonsFromPokedex = async (
