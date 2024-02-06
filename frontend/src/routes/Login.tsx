@@ -1,6 +1,6 @@
 import "../App.css";
-import { Form, useNavigate } from "react-router-dom";
-import { BaseSyntheticEvent, useState, useRef } from "react";
+import { Form, useNavigate, useLocation } from "react-router-dom";
+import { BaseSyntheticEvent, useState, useRef, useEffect } from "react";
 import trainerService from "../services/trainerService";
 import Alert from "../components/Alert";
 
@@ -9,6 +9,7 @@ export default function Login() {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const alertRef = useRef<any>();
+  const location = useLocation();
 
   const login = () => {
     //TODO: validate each param
@@ -28,9 +29,22 @@ export default function Login() {
     );
   };
 
+  const loadRouteMessage = () => {
+    if (location.state?.routeMessage) {
+      const routeMessage = location.state.routeMessage;
+      alertRef.current.showAlert(routeMessage, "info");
+      //Stops the message from re-rendering if the user refreshes.
+      window.history.replaceState({}, "");
+    }
+  };
+
+  useEffect(() => {
+    loadRouteMessage();
+  }, []);
+
   return (
     <Form method="post" id="login-form">
-      <div className="container" style={{ width: "50%" }}>
+      <div className="container">
         <div
           className="row"
           style={{ backgroundColor: "#301934", color: "white" }}

@@ -3,7 +3,8 @@ import PokemonList from "../components/PokemonList";
 import CollectionMenu from "../components/CollectionMenu";
 import Alert from "../components/Alert";
 import { CollectionType } from "../models/Collections";
-import { BaseSyntheticEvent, useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import {
   IBatchFetchResult,
   IApiError,
@@ -17,6 +18,7 @@ import pokedexService from "../services/pokedexService";
 import { capitalize } from "../utils";
 
 import "../App.css";
+import trainerService from "../services/trainerService";
 
 function App() {
   const [collectionType, setCollectionType] = useState<CollectionType>(
@@ -30,6 +32,7 @@ function App() {
   const [error, setError] = useState<IApiError | undefined>(undefined);
 
   const alertRef = useRef<any>();
+  const navigate = useNavigate();
 
   const onPokeClicked = async (url: string | null) => {
     if (!url) return;
@@ -135,9 +138,41 @@ function App() {
     setSelectedPokemon(undefined);
   };
 
+  const logout = () => {
+    trainerService
+      .logout()
+      .then(() => {
+        navigate("/login", {
+          state: { routeMessage: "You have been successfully logged out." },
+        });
+      })
+      .catch((error) => {
+        console.error(error);
+        const resMessage =
+          (error.response && error.response.data) ||
+          error.message ||
+          error.toString();
+
+        alertRef.current.showAlert(resMessage, "danger");
+      });
+  };
+
+  const checkSession = () => {
+    const session = localStorage.getItem("session");
+    if (!session) {
+      navigate("/login", {
+        state: { routeMessage: "Your session has expired." },
+      });
+    }
+  };
+
   useEffect(() => {
     refreshList();
   }, [collectionType]);
+
+  useEffect(() => {
+    checkSession();
+  }, [error]);
 
   return (
     <div className="container">
@@ -145,11 +180,22 @@ function App() {
         className="row"
         style={{ backgroundColor: "#301934", color: "white" }}
       >
-        <h2 style={{ marginLeft: "1vw" }}>Pokemons</h2>
-        <CollectionMenu
-          collectionType={collectionType}
-          onCollectionClicked={(e) => setCollectionType(e.target.value)}
-        />
+        <div className="col">
+          <h2 style={{ marginLeft: "1vw" }}>Pokemons</h2>
+          <CollectionMenu
+            collectionType={collectionType}
+            onCollectionClicked={(e) => setCollectionType(e.target.value)}
+          />
+        </div>
+        <div className="col d-flex flex-column align-items-end">
+          <button
+            className="btn btn-primary mt-auto"
+            type="button"
+            onClick={() => logout()}
+          >
+            Logout
+          </button>
+        </div>
       </div>
       <Alert ref={alertRef} />
       <div id="mainDisplayRow" className="row">

@@ -1,3 +1,4 @@
+import { AxiosResponse } from "axios";
 import api from "./api";
 import sessionService from "./sessionService";
 
@@ -28,9 +29,23 @@ const register = async (
   return result.status;
 };
 
+const logout = async (): Promise<number | any> => {
+  await api
+    .post("/api/trainers/logout")
+    .catch((e) => {
+      console.error(e);
+      return { error: e };
+    })
+    .then((result: any) => {
+      sessionService.removeSession();
+      return result.status;
+    });
+};
+
 const trainerService = {
   login,
   register,
+  logout,
 };
 
 export default trainerService;

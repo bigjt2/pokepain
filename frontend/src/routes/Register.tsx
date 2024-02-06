@@ -38,7 +38,7 @@ export default function Register() {
 
   return (
     <Form method="post" id="register-form">
-      <div className="container" style={{ width: "50%" }}>
+      <div className="container">
         <Alert ref={alertRef} />
         {!success ? (
           <div className="container">
@@ -100,6 +100,7 @@ export default function Register() {
             <div className="row">
               <button
                 className="btn btn-primary"
+                style={{ maxWidth: "50%" }}
                 type="button"
                 onClick={() => navigate("/login")}
               >
