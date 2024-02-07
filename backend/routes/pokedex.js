@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const winston = require("winston");
 const Pokemon = require("../models/pokemon");
+const RefreshToken = require("../models/refreshToken");
 const verifyAccess = require("../middleware/verifyAccessToken");
 const { validateIdParam, validatePokePost } = require("../middleware/validate");
 
@@ -10,19 +11,29 @@ const POKEDEX_ENDPOINT = "/api/pokedex";
 router.get("/", verifyAccess, async (req, res) => {
   let limit = parseInt(req.query.limit);
   let offset = parseInt(req.query.offset);
-  const pokemons = await Pokemon.find().sort("name").limit(limit).skip(offset);
-  let results = pokemons.map((pk) => {
-    let url = `${req.protocol}://${req.get("host")}${POKEDEX_ENDPOINT}/${
-      pk.id
-    }`;
-    return { name: pk.name, url: url };
-  });
-  res.send({
-    count: pokemons.length,
-    next: "",
-    previous: null,
-    results: results,
-  });
+
+  try {
+    let trainerId = req.trainerId;
+    const pokemons = await Pokemon.find({ trainer: trainerId })
+      .sort("name")
+      .limit(limit)
+      .skip(offset);
+    let results = pokemons.map((pk) => {
+      let url = `${req.protocol}://${req.get("host")}${POKEDEX_ENDPOINT}/${
+        pk.id
+      }`;
+      return { name: pk.name, url: url };
+    });
+    res.send({
+      count: pokemons.length,
+      next: "",
+      previous: null,
+      results: results,
+    });
+  } catch (e) {
+    winston.error(e);
+    res.status(500).send("Backend server error. Check logs for junky code.");
+  }
 });
 
 router.get("/:id", [verifyAccess, validateIdParam], async (req, res) => {
@@ -32,10 +43,13 @@ router.get("/:id", [verifyAccess, validateIdParam], async (req, res) => {
 
 router.post("/", [verifyAccess, validatePokePost], async (req, res) => {
   try {
+    let trainerId = req.trainerId;
+
     const exists =
       (await Pokemon.count({
         name: req.body.name,
         id: req.body.id,
+        trainer: trainerId,
       })) > 0;
     if (exists) {
       res.status(303).send("Pokemon already caught.");
@@ -46,6 +60,7 @@ router.post("/", [verifyAccess, validatePokePost], async (req, res) => {
       name: req.body.name,
       id: req.body.id,
       body: req.body,
+      trainer: trainerId,
     });
     await pokemon.save();
     res.status(201).send({ name: pokemon.name, id: pokemon.id });
@@ -57,7 +72,12 @@ router.post("/", [verifyAccess, validatePokePost], async (req, res) => {
 
 router.delete("/:id", [verifyAccess, validateIdParam], async (req, res) => {
   try {
-    const deleted = await Pokemon.findOneAndRemove({ id: req.params.id });
+    let trainerId = req.trainerId;
+
+    const deleted = await Pokemon.findOneAndRemove({
+      id: req.params.id,
+      trainer: trainerId,
+    });
     if (!deleted)
       return res
         .status(404)

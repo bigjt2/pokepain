@@ -32,7 +32,7 @@ module.exports = (req, res, next) => {
     if (err) {
       return catchError(err, res);
     }
-    req.userId = decoded.id;
+    req.trainerId = decoded.trainerId;
     next();
   });
 };
