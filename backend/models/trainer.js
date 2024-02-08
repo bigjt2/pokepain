@@ -11,7 +11,6 @@ const Trainer = mongoose.model(
       type: String,
       required: true,
     },
-    pokemons: [{ type: mongoose.Schema.Types.ObjectId, ref: "Pokemon" }],
   })
 );
 
