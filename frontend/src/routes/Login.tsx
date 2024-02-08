@@ -3,6 +3,7 @@ import { Form, useNavigate, useLocation } from "react-router-dom";
 import { BaseSyntheticEvent, useState, useRef, useEffect } from "react";
 import trainerService from "../services/trainerService";
 import Alert from "../components/Alert";
+import { usernameSchema, passSchema } from "../validation/schemas";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,7 +13,14 @@ export default function Login() {
   const location = useLocation();
 
   const login = () => {
-    //TODO: validate each param
+    try {
+      usernameSchema.parse(username);
+      passSchema.parse(password);
+    } catch (vError: any) {
+      alertRef.current.showAlert(vError.errors[0].message, "danger");
+      return;
+    }
+
     trainerService.login(username, password).then(
       () => {
         navigate("/app");
@@ -68,7 +76,7 @@ export default function Login() {
           <div className="col">
             <input
               value={password}
-              type="text"
+              type="password"
               onChange={(e: BaseSyntheticEvent) => {
                 setPassword(e.target.value);
               }}

@@ -2,8 +2,9 @@ import "../App.css";
 import { Form, useNavigate } from "react-router-dom";
 import { useState, useRef } from "react";
 import { BaseSyntheticEvent } from "react";
-import trainerService from "../services/trainerService";
 import Alert from "../components/Alert";
+import trainerService from "../services/trainerService";
+import { usernameSchema, passSchema } from "../validation/schemas";
 
 export default function Register() {
   const [username, setUserName] = useState("");
@@ -14,7 +15,15 @@ export default function Register() {
   const navigate = useNavigate();
 
   const register = () => {
-    //TODO: validate
+    try {
+      usernameSchema.parse(username);
+      passSchema.parse(password);
+      passSchema.parse(confirmPass);
+    } catch (vError: any) {
+      alertRef.current.showAlert(vError.errors[0].message, "danger");
+      return;
+    }
+
     if (password !== confirmPass) {
       alertRef.current.showAlert(`Passwords must match`, "danger");
     } else {
@@ -66,7 +75,7 @@ export default function Register() {
               <div className="col">
                 <input
                   value={password}
-                  type="text"
+                  type="password"
                   onChange={(e: BaseSyntheticEvent) => {
                     setPassword(e.target.value);
                   }}
@@ -78,7 +87,7 @@ export default function Register() {
               <div className="col">
                 <input
                   value={confirmPass}
-                  type="text"
+                  type="password"
                   onChange={(e: BaseSyntheticEvent) => {
                     setConfirmPass(e.target.value);
                   }}
