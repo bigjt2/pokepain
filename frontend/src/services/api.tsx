@@ -1,8 +1,8 @@
 import axios from "axios";
 import sessionService from "./sessionService";
 
-const ENV_HOST = import.meta.env.VITE_ENV_HOST || "http://localhost";
-const PROXY_PORT = import.meta.env.VITE_FRONTEND_PROXY_PORT || "7001";
+const ENV_HOST = import.meta.env.VITE_FRONTEND_HOST || "http://localhost";
+const PROXY_PORT = import.meta.env.VITE_FRONTEND_PORT || "7001";
 
 const api = axios.create({
   baseURL: `${ENV_HOST}:${PROXY_PORT}`,

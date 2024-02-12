@@ -8,6 +8,6 @@ COPY package*.json ./
 RUN npm install
 COPY . . 
 
-EXPOSE 8080 
+EXPOSE 9999 
 
 CMD ["npm", "run", "docker"]
