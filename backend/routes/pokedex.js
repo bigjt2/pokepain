@@ -30,10 +30,7 @@ router.get("/", verifyAccess, async (req, res) => {
         .limit(limit)
         .skip(offset);
       results = pokemons.map((pk) => {
-        let url = `${req.protocol}://${req.get("host")}${POKEDEX_ENDPOINT}/${
-          pk.id
-        }`;
-        return { name: pk.name, url: url };
+        return { name: pk.name, id: pk.id };
       });
       responseBody.count = pokemons.length;
       responseBody.results = results;

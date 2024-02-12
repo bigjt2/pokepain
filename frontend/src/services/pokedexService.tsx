@@ -37,8 +37,9 @@ const fetchPokemonsFromPokedex = async (
 };
 
 const fetchPokedexEntry = async (
-  url: string
+  id: number
 ): Promise<IPokemonResult | IApiError> => {
+  let url = `${pokedexEndpoint}${id}`;
   try {
     const { data } = await api.get(url);
     return data as IPokemonResult;

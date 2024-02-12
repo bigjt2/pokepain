@@ -1,5 +1,5 @@
 import PokemonDisplay from "../components/PokemonDisplay";
-import PokemonList from "../components/PokemonList";
+import PokemonList, { IPokemonListItem } from "../components/PokemonList";
 import CollectionMenu from "../components/CollectionMenu";
 import Alert from "../components/Alert";
 import { CollectionType } from "../models/Collections";
@@ -34,13 +34,15 @@ function App() {
   const alertRef = useRef<any>();
   const navigate = useNavigate();
 
-  const onPokeClicked = async (url: string | null) => {
-    if (!url) return;
+  const onPokeClicked = async (selected: IPokemonListItem | null) => {
+    if (!selected) return;
     let pokemonResult = null;
     if (CollectionType.Wild === collectionType) {
-      pokemonResult = await pokeApiService.fetchSinglePokemonDetail(url);
+      pokemonResult = await pokeApiService.fetchSinglePokemonDetail(
+        selected.url
+      );
     } else if (CollectionType.Pokedex === collectionType) {
-      pokemonResult = await pokedexService.fetchPokedexEntry(url);
+      pokemonResult = await pokedexService.fetchPokedexEntry(selected.id);
     }
     if (pokemonResult && isPokemonResult(pokemonResult))
       setSelectedPokemon(pokemonResult);

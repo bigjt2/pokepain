@@ -3,10 +3,16 @@ import { capitalize } from "../utils";
 import { CollectionType } from "../models/Collections";
 import { isMobile } from "react-device-detect";
 
+export interface IPokemonListItem {
+  name: string;
+  id: number;
+  url: string;
+}
+
 interface PokemonListProps {
   pokemons: [];
   totalPokemons: number;
-  onPokemonSelected: (url: string | null) => void;
+  onPokemonSelected: (pokemon: IPokemonListItem | null) => void;
   onListInternalUpdate: (offset: number, limit: number) => void;
   collectionType: CollectionType;
   error: any | void;
@@ -68,11 +74,11 @@ function PokemonList({
         <div className="row">
           <div style={{ height: "80vh" }}>
             <ul className="list-group list-group-scroll">
-              {pokemons.map((pokemon: { name: string; url: string }, index) => (
+              {pokemons.map((pokemon: IPokemonListItem, index) => (
                 <li
                   key={pokemon.name}
                   onClick={() => {
-                    onPokemonSelected(pokemon.url);
+                    onPokemonSelected(pokemon);
                     setSelectedIndex(index);
                   }}
                   className={
