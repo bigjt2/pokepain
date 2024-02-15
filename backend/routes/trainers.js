@@ -25,28 +25,38 @@ const createCookie = (trainerId, req, res) => {
 
 router.post("/login", async (req, res) => {
   const authHeader = req.get("authorization");
+  if (!authHeader)
+    return res.status(401).send("No authorization header found!");
+
   const base64Credentials = authHeader.split(" ")[1];
   const credentials = Buffer.from(base64Credentials, "base64").toString(
     "ascii"
   );
   const [username, password] = credentials.split(":");
 
-  const trainer = await Trainer.findOne({ name: username });
-  if (!trainer)
-    return res.status(404).send("No trainer found with provided trainer name.");
+  try {
+    const trainer = await Trainer.findOne({ name: username });
+    if (!trainer)
+      return res
+        .status(404)
+        .send("No trainer found with provided trainer name.");
 
-  if (!password) return res.status(401).send("Password required.");
-  const success = await bcrypt.compare(password, trainer.password);
-  if (!success)
-    return res
-      .status(401)
-      .send("Password is incorrect. Wake up earlier next time!");
+    if (!password) return res.status(401).send("Password required.");
+    const success = await bcrypt.compare(password, trainer.password);
+    if (!success)
+      return res
+        .status(401)
+        .send("Password is incorrect. Wake up earlier next time!");
 
-  let dbRefreshToken = await RefreshToken.createToken(trainer);
+    let dbRefreshToken = await RefreshToken.createToken(trainer);
 
-  createCookie(trainer._id, req, res);
+    createCookie(trainer._id, req, res);
 
-  res.status(200).send({ trainer: username, refreshToken: dbRefreshToken });
+    res.status(200).send({ trainer: username, refreshToken: dbRefreshToken });
+  } catch (error) {
+    winston.error(error);
+    res.status(500).send("Backend server error. Check logs for junky code.");
+  }
 });
 
 router.post("/logout", async (req, res) => {

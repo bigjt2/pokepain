@@ -14,14 +14,43 @@ jwtSecret: any string -- secret used to generate JSON web tokens which serve as 
 jwtAccessExpiration: number -- access token expiration -- in seconds, once expired a refresh token should be requested
 jwtRefreshExpiration: number -- refresh token expiration -- in seconds, once expired a user will have to re-login
 
+ex:
+module.exports = {
+cookieSecret: "your_cookie_secret",
+jwtSecret: "your_JWT_secret",
+jwtAccessExpiration: 300, // access token -- in seconds, once expired a refresh token should be requested
+jwtRefreshExpiration: 600, // refresh token -- in seconds, once expired a user will have to re-login
+};
+
 # /props/cors_config_origins.js
 
 This is a string array of allowed origins hosting the frontend. If devloping locally, make sure it includes your localhost.
 
+ex:
+module.exports = [
+"http://localhost:8080",
+"http://localhost:9999",
+"http://192.168.1.63:8080",
+];
+
 Set the following environment variables in the OS where this is running.
+
+# /props/cloudWatch_config.js
+
+Required when running on AWS if you want Winston logging to be redirected into CloudWatch. Of course you will need to set up things as neccessary in any AWS task definition running the backend in a docker container, as well. NODE_ENV will need to be set to "aws" to trigger this in the environment variables.
+
+ex:
+module.exports = {
+logGroupName: "/ecs/PokepainServiceFamily-backend",
+logStreamName: "ecs/pokepain-backend/winston-stream",
+awsRegion: "us-east-1",
+awsAccessKeyId: "aws role access key",
+awsSecretKey: "aws role secret key",
+};
 
 # environment variables
 
+NODE_ENV - node environment for backend
 POKEDEX_API_PORT - the port where the pokedex backend server will be lisening.
 POKEDEX_MONGO_HOST - hostname of mongo db instance where pokedex database is to be located.
 POKEDEX_MONGO_PORT - port where mongo db is listening

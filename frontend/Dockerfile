@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 9999 
 
-CMD ["npm", "run", "docker"]
+CMD ["npm", "run", "aws"]

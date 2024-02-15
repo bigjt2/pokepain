@@ -26,8 +26,6 @@ RefreshTokenSchema.statics.createToken = async function (trainer) {
     expiryDate: expiredAt.getTime(),
   });
 
-  console.log(object);
-
   let refreshToken = await object.save();
 
   return refreshToken.token;
