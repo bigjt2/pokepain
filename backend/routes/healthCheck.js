@@ -8,10 +8,8 @@ const HEALTHCHECK_ENDPOINT = "/api/healthcheck";
 router.get("/", async (req, res) => {
   dbState = mongoose.connection.readyState;
 
-  winston.info("Health check pinged.");
-  winston.info(`Database state: ${dbState}`);
-
   if (dbState === 0 || dbState === 3) {
+    winston.error(`Health check failed. Database state: ${dbState}`);
     res.status(503).send("Pokedex connection to the database failed.");
   } else {
     res.status(200).send("Pokedex running.");
