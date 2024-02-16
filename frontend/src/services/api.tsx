@@ -1,8 +1,17 @@
 import axios from "axios";
 import sessionService from "./sessionService";
 
-const ENV_HOST = import.meta.env.VITE_FRONTEND_HOST || "http://localhost";
-const PROXY_PORT = import.meta.env.VITE_FRONTEND_PORT || "7001";
+let ENV_HOST = "http://localhost";
+let PROXY_PORT = "7001";
+if (import.meta.env.MODE === "aws") {
+  //Directly hit the pokedex backend in aws environment.
+  ENV_HOST = import.meta.env.VITE_POKEDEX_HOST;
+  PROXY_PORT = import.meta.env.VITE_POKEDEX_PORT;
+} else {
+  //Otherwise use the proxy server.
+  ENV_HOST = import.meta.env.VITE_FRONTEND_HOST;
+  PROXY_PORT = import.meta.env.VITE_FRONTEND_PORT;
+}
 
 const api = axios.create({
   baseURL: `${ENV_HOST}:${PROXY_PORT}`,

@@ -10,6 +10,8 @@ export default ({mode}) => {
   const POKEDEX_API_PORT = process.env.VITE_POKEDEX_PORT;
   const FRONTEND_PROXY_PORT : number = Number(process.env.VITE_FRONTEND_PORT);
 
+  const isAws = mode === "aws";
+  console.log(`mode: ${mode} -- isAws ${isAws}`);
   return defineConfig({
     plugins: [react()],
     server: {
@@ -19,7 +21,8 @@ export default ({mode}) => {
       host: true, // Here
       strictPort: true,
       port: FRONTEND_PROXY_PORT, 
-      proxy: {
+      //proxy is not used in AWS environment, this app will hit the pokedex backend directly
+      proxy: isAws ? {} : {
         '/api': {
           target: `${POKEDEX_API_HOST}:${POKEDEX_API_PORT}/api`,
           changeOrigin: true,
