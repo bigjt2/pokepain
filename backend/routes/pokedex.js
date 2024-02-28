@@ -2,10 +2,14 @@ const express = require("express");
 const router = express.Router();
 const winston = require("winston");
 const Pokemon = require("../models/pokemon");
-const Pokedex = require("../models/pokedex");
 const pokemonView = require("../models/pokemonView");
 const verifyAccess = require("../middleware/verifyAccessToken");
 const { validateIdParam, validatePokePost } = require("../middleware/validate");
+const {
+  initPokedex,
+  getPokedex,
+  getPokedexEntries,
+} = require("../service/pokedexService");
 
 const POKEDEX_ENDPOINT = "/api/pokedex";
 
@@ -14,28 +18,8 @@ router.get("/", verifyAccess, async (req, res) => {
   let offset = parseInt(req.query.offset);
 
   try {
-    let pokedex = await getPokedex(req);
-    let responseBody = {
-      count: 0,
-      next: "",
-      previous: null,
-      results: [],
-    };
-
-    if (pokedex) {
-      const pokemons = await pokemonView.PokemonView.find({
-        _id: { $in: pokedex.pokemons },
-      })
-        .sort("name")
-        .limit(limit)
-        .skip(offset);
-      results = pokemons.map((pk) => {
-        return { name: pk.name, id: pk.id };
-      });
-      responseBody.count = pokemons.length;
-      responseBody.results = results;
-    }
-
+    const pokedex = await getPokedex(req.trainer.trainerId);
+    let responseBody = await getPokedexEntries(pokedex, limit, offset);
     res.send(responseBody);
   } catch (e) {
     winston.error(e);
@@ -58,9 +42,9 @@ router.post("/", [verifyAccess, validatePokePost], async (req, res) => {
       pokemon = await initPokemon(req);
     }
 
-    let pokedex = await getPokedex(req);
+    let pokedex = await getPokedex(req.trainer.trainerId);
     if (!pokedex) {
-      pokedex = await initPokedex(req);
+      pokedex = await initPokedex(req.trainer.trainerId);
     }
     if (pokedex.pokemons.includes(pokemon._id)) {
       res.status(303).send("Pokemon already caught.");
@@ -78,7 +62,7 @@ router.post("/", [verifyAccess, validatePokePost], async (req, res) => {
 
 router.delete("/:id", [verifyAccess, validateIdParam], async (req, res) => {
   try {
-    let pokedex = await getPokedex(req);
+    let pokedex = await getPokedex(req.trainer.trainerId);
     let view = await pokemonView.PokemonView.findOne({ id: req.params.id });
 
     const index = pokedex.pokemons.indexOf(view._id);
@@ -97,11 +81,6 @@ router.delete("/:id", [verifyAccess, validateIdParam], async (req, res) => {
   }
 });
 
-async function getPokedex(req) {
-  let trainerId = req.trainerId;
-  return await Pokedex.findOne({ trainer: trainerId });
-}
-
 async function initPokemon(req) {
   pokemon = new Pokemon({
     name: req.body.name,
@@ -109,13 +88,6 @@ async function initPokemon(req) {
     body: req.body,
   });
   return await pokemon.save();
-}
-
-async function initPokedex(req) {
-  pokedex = new Pokedex({
-    trainer: req.trainerId,
-  });
-  return await pokedex.save();
 }
 
 module.exports = { Router: router, POKEDEX_ENDPOINT: POKEDEX_ENDPOINT };

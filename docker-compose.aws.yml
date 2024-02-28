@@ -14,9 +14,11 @@ services:
     build: ./backend
     ports:
       - 8001:8001
+      - 9001:9001
     environment:
       NODE_ENV: aws
       POKEDEX_API_PORT: 8001
+      POKEDEX_ADMIN_PORT: 9001
       POKEDEX_MONGO_HOST: database
       POKEDEX_MONGO_PORT: 27017
       POKEDEX_MONGO_NAME: pokedex

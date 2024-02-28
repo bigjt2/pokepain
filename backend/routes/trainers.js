@@ -5,23 +5,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Trainer = require("../models/trainer");
 const RefreshToken = require("../models/refreshToken");
-const authConfig = require("../props/auth_config");
+const createCookie = require("../auth/createCookie");
 
 const TRAINERS_ENDPOINT = "/api/trainers";
-
-const createCookie = (trainerId, req, res) => {
-  //create new access token and overwrite in cookie
-  let data = {
-    trainerId: trainerId,
-  };
-  const accessToken = jwt.sign(data, authConfig.jwtSecret, {
-    algorithm: "HS256",
-    allowInsecureKeySizes: true,
-    expiresIn: authConfig.jwtAccessExpiration,
-  });
-
-  req.session.token = accessToken;
-};
 
 router.post("/login", async (req, res) => {
   const authHeader = req.get("authorization");
@@ -40,6 +26,12 @@ router.post("/login", async (req, res) => {
       return res
         .status(404)
         .send("No trainer found with provided trainer name.");
+    if (trainer.status !== "active")
+      return res
+        .status(404)
+        .send(
+          `You are locked from using the app due to having the following status: ${trainer.status}.`
+        );
 
     if (!password) return res.status(401).send("Password required.");
     const success = await bcrypt.compare(password, trainer.password);
@@ -50,7 +42,7 @@ router.post("/login", async (req, res) => {
 
     let dbRefreshToken = await RefreshToken.createToken(trainer);
 
-    createCookie(trainer._id, req, res);
+    createCookie(trainer, req);
 
     res.status(200).send({ trainer: username, refreshToken: dbRefreshToken });
   } catch (error) {
@@ -62,7 +54,7 @@ router.post("/login", async (req, res) => {
 router.post("/logout", async (req, res) => {
   try {
     let accessToken = jwt.decode(req.session.token);
-    await RefreshToken.deleteOne({ trainer: accessToken.trainerId });
+    await RefreshToken.deleteOne({ trainer: accessToken.trainer.trainerId });
 
     req.session = null;
     return res.status(200).send({ message: "You've been signed out!" });
@@ -81,8 +73,11 @@ router.post("/register", async (req, res) => {
     const trainer = new Trainer({
       name: req.body.trainerName,
       password: encryptedPass,
+      roles: ["trainer"],
+      status: "active",
     });
     await trainer.save();
+
     res.status(201).send({ trainerName: trainer.name, encryptedPass });
   } catch (e) {
     winston.error(e);
@@ -119,7 +114,7 @@ router.post("/refreshToken", async (req, res) => {
     }
 
     let accessToken = jwt.decode(req.session.token);
-    createCookie(accessToken.trainerId, req);
+    createCookie(accessToken.trainer, req);
 
     return res.status(200).json({
       refreshToken: refreshToken.token,
