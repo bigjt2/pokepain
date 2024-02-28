@@ -52,6 +52,7 @@ awsSecretKey: "aws role secret key",
 
 NODE_ENV - node environment for backend
 POKEDEX_API_PORT - the port where the pokedex backend server will be lisening.
+POKEDEX_ADMIN_PORT - the port for the pokedex backend's admin API.
 POKEDEX_MONGO_HOST - hostname of mongo db instance where pokedex database is to be located.
 POKEDEX_MONGO_PORT - port where mongo db is listening
 POKEDEX_MONGO_NAME - database name for collections used by the backend

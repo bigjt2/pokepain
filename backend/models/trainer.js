@@ -11,6 +11,19 @@ const Trainer = mongoose.model(
       type: String,
       required: true,
     },
+    roles: {
+      type: [String],
+      default: ["trainer"],
+    },
+    status: {
+      type: String,
+      default: "active",
+      required: true,
+    },
+    schema_version: {
+      type: Number,
+      default: 1,
+    },
   })
 );
 
